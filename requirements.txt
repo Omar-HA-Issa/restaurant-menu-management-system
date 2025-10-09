@@ -1,0 +1,25 @@
+# Backend Dependencies (Python/Django)
+
+# Django Core
+Django>=4.2
+djangorestframework
+django-cors-headers
+django-unfold
+
+# Database
+mysqlclient
+
+# PDF & Image Processing
+PyMuPDF
+Pillow
+
+# AI Integration
+anthropic
+
+# Utilities
+python-dotenv
+
+# Testing
+pytest
+pytest-django
+

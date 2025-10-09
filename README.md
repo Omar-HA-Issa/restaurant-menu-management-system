@@ -1,251 +1,111 @@
+# Restaurant Menu Management System
 
-# Restaurant Menu Project
+A full-stack system that automates restaurant menu processing, from PDF extraction to AI-powered data structuring and database integration.  
 
-Welcome to the **Restaurant Menu Project**! This project implements a dynamic restaurant menu management system that allows users to view, add, update, and delete menu items. Built with Python and Django, it leverages MySQL and Claude AI API integration for database management and processing, and React for the dinal user interface.
+Built with Django, MySQL, and Next.js, the platform allows administrators to upload restaurant menus, automatically extract content using AI, and manage structured menu data through a web interface.
 
-## Contents
+---
 
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Key Features](#key-features)
-- [File Structure](#file-structure)
-- [Future Improvements](#future-improvements)
+## My Contributions
+
+This project was developed as a group effort. My main responsibility was designing and implementing the **backend ETL pipeline** that powers the AI-driven menu processing system:
+
+1. **Extract (Data Ingestion)**
+   - Developed `PDFreader.py` using PyMuPDF to extract and clean text from uploaded restaurant menu PDFs.
+   - Implemented robust error handling for corrupted, empty, or image-only files.
+
+2. **Transform (AI Structuring)**
+   - Built `AIreader.py` to send extracted text to Anthropic Claude and receive structured JSON output.
+   - Designed and tuned prompt engineering logic to convert unstructured text into normalized, ready-to-ingest data.
+
+3. **Load (Database Integration)**
+   - Designed and implemented the MySQL database schema covering restaurants, menus, and menu items.
+   - Connected Django models to the schema and implemented logic to insert and validate AI-generated JSON data.
+
+4. **Testing**
+   - Added backend tests covering models, relationships, and endpoints.
+   - Verified data integrity and workflow correctness using `pytest` and `pytest-django`.
 
 ---
 
 ## Features
-- CRUD Operations for menu items
-- PDF menu processing with AI
-- Advanced filtering and search
-- SQL materialized views
-- Database optimization with indexes
-- Responsive UI with Next.js
-- Error logging and tracking
+
+- CRUD operations for restaurant menus and items  
+- Automatic PDF text extraction using PyMuPDF  
+- AI-based text structuring via Anthropic Claude  
+- Cleaned and validated JSON-to-database ingestion  
+- SQL materialized views for aggregated insights  
+- Responsive frontend built with Next.js and TailwindCSS  
+- Django admin panel enhanced with Django Unfold  
+
+---
 
 ## Technologies Used
-### Backend
-- Python/Django
-- Django REST Framework
-- MySQL
-- Anthropic Claude API
-- PyMuPDF
 
-### Frontend  
-- Next.js/React
+### Backend
+- Django & Django REST Framework  
+- MySQL  
+- PyMuPDF  
+- Anthropic Claude API  
+- python-dotenv  
+- pytest & pytest-django  
+
+### Frontend
+- Next.js (React)
 - TailwindCSS
 - shadcn-ui
 - React Query
 
-## Database Schema & Indexes
-- Restaurant (name, location)  
-- Menu (version, date)
-- MenuSection (section_name, section_order)
-- MenuItem (name, price)
-- DietaryRestriction (label)
-- ProcessingLog (status, timestamp)
+---
 
-## SQL Views
-```sql
-CREATE VIEW menu_items_per_restaurant AS
-SELECT 
-   r.name as restaurant_name,
-   COUNT(mi.item_id) as total_items,
-   AVG(mi.price) as average_price
-FROM menu_app_restaurant r
-JOIN menu_app_menu m ON r.restaurant_id = m.restaurant_id
-JOIN menu_app_menusection ms ON m.menu_id = ms.menu_id
-JOIN menu_app_menuitem mi ON ms.section_id = mi.section_id
-GROUP BY r.restaurant_id, r.name;
+## Database Schema
 
-CREATE VIEW dietary_restrictions_distribution AS
-SELECT 
-   dr.label as restriction_type,
-   COUNT(mi.item_id) as item_count,
-   COUNT(mi.item_id) * 100.0 / (SELECT COUNT(*) FROM menu_app_menuitem) as percentage
-FROM menu_app_dietaryrestriction dr
-LEFT JOIN menu_app_menuitem mi ON dr.restriction_id = dr.restriction_id
-GROUP BY dr.restriction_id, dr.label;
+- **Restaurant:** name, location  
+- **Menu:** restaurant, version, date  
+- **MenuSection:** menu, section_name, section_order  
+- **MenuItem:** section, name, description, price, dietary_restriction  
+- **DietaryRestriction:** label  
+- **ProcessingLog:** menu, status, timestamp  
 
-CREATE VIEW price_analysis_per_restaurant AS
-SELECT 
-   r.name as restaurant_name,
-   MIN(mi.price) as min_price,
-   MAX(mi.price) as max_price,
-   AVG(mi.price) as avg_price
-FROM menu_app_restaurant r
-JOIN menu_app_menu m ON r.restaurant_id = m.restaurant_id
-JOIN menu_app_menusection ms ON m.menu_id = ms.menu_id
-JOIN menu_app_menuitem mi ON ms.section_id = mi.section_id
-GROUP BY r.restaurant_id, r.name;
+---
+
+## API Overview
+
+**Base URL:** `http://127.0.0.1:8000/api/`
+
+| Endpoint | Method | Description |
+|-----------|---------|-------------|
+| `/restaurants/` | GET | Retrieve all restaurants |
+| `/menus/` | GET | List menus per restaurant |
+| `/menuitems/` | GET | Retrieve all menu items |
+| `/menuitems/` | POST | Create a new menu item |
+| `/upload/` | POST | Upload and process a PDF menu |
+| `/logs/` | GET | View processing logs |
+
+---
+
+## Testing
+
+The project includes a lightweight, automated test suite to verify backend functionality.
+
+### Technologies
+- `pytest`
+- `pytest-django`
+
+### Coverage
+- **Models:** Relationships between restaurants, menus, and items  
+- **API:** CRUD endpoints and data creation  
+- **Processing:** Validation of menu versioning, ordering, and dietary restrictions  
+
+### Run Tests
+```bash
+pytest -v
 ```
----
-
-## Installation
-
-Follow these steps to set up the project locally:
-
-1. **Extract ZIP file**:
-   ```bash
-   extract ZIP file with the project
-   cd Database_Project/restaurant_menu_project
-   
-2. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   
-3. **Set your database connection**:
-   - Create an SQL database
-   - Set you own database connection in settings.py
-
-5. **Run servers**
-   ```terminal
-   In terminal inside Database_Project/restaurant_menu_project run "python manage.py runserver"
-   ```
-   
-   ```bash
-   In Git CMD run "npm install, npm start, npm run dev"
-   ```
-   
-6. **Navigate to admin/frontend**
-   For django admin go to http://127.0.0.1:8000/admin
-   For frontend go to http://localhost:3000
-   
----
-
-## Usage
-
-### Navigating the Application
-1. **Homepage**: View all menu categories and their respective items.
-2. **Upload Menu**:  
-   - Upload a PDF containing menu information.  
-   - The PDF is processed using the AI Reader and structured into JSON for database storage.
-3. **Views**: Materialized views
-4. **Team**: A glimpse of our developing team
-5. **Database**: Visualize the database and apply desired filters
 
 ---
 
-## **Key Features**
+## License
 
-This system is designed with a range of features to streamline menu management across the frontend and backend:
-
-### **1) Frontend**
-The frontend is built using **React** to provide a responsive user interface and handle API requests effectively. Key features include:  
-- **Dynamic Navigation Menu**:  
-  Allows easy management of menu uploads, categories, and items.  
-- **Seamless Frontend Assets**:  
-  Bundles frontend assets for optimized rendering and smooth navigation of the main menu.
-
-### **2) Backend**
-#### **Text Extraction**  
-- Utilizes the **PyMuPDF** library to extract text from uploaded PDF menus, enabling AI-based processing.
-#### **JSON formatting**
-- Calls a request to Anthropic API to format extracted text into JSON
-- Cleans the JSON structured data into ASCII characters
-#### **Database insertion**
-- Inserts extracted and cleaned JSON formatted data into the database
-
-#### **SQL Schema and Database System (AI-Enhanced)**  
-- Features a robust database schema design, including tables for menu categories, items, and user management.  
-  Example:
-  - **`Categories`**: Stores menu categories.  
-  - **`Menu Items`**: Stores details for individual items, such as price, description, and associated categories.  
-
-#### **Django Menu Processing**  
-- Integrates the SQL database into the Django Admin panel for management.  
-- Logs and tracks the entire menu processing lifecycle, supporting debugging and traceability.
-- The Django administration interface has also been enhanced with Django unfold.
-
----
-
-## **File Structure**
-
-A breakdown of the main files and directories within the project:
-
-1) ### **sql**  
-- Central repository for materialized views' queries
-
-2) ### **menu_app Folder**  
-The core application directory containing several subcomponents:
-
-1. #### **`PDFreader.py`**  
-- Extracts text from uploaded PDF files.  
-- Uses the **PyMuPDF** library for precise and efficient PDF operations.  
-- Implements error handling to ensure accurate text extraction.
-
-2. #### **`AIreader.py`**  
-- Contains functions to process raw text extracted from PDFs and database insertion.  
-- Categorizes and structures the text into tables, outputting structured JSON data for seamless database integration.
-
-3. #### **`forms.py`**  
-- Customizes forms for uploading PDFs and editing menu items.
-
-4. #### **`api.py`**  
-- Handles API requests and integrates with external systems for menu processing.  
-- Ensures reliable communication between the backend and frontend.
-
-5. #### **`serializers.py`**  
-- Converts database models into JSON format for frontend communication.
-
-6. #### **`models.py`**  
-- Defines database structures for menu categories and items.  
-- Establishes relationships between tables (e.g., categories and items) to enable efficient database querying.
-
-7. #### **`views.py`**  
-- Implements the core logic for handling HTTP requests and rendering templates.  
-- Facilitates CRUD operations for managing menu items.
-
-8. #### **`manage.py`**  
-- A command-line utility for managing the Django application. Key functions include:  
-  - Running the development server: `python manage.py runserver`  
-  - Applying database migrations: `python manage.py migrate`  
-  - Creating app-specific migrations: `python manage.py makemigrations`  
-  - Creating a superuser account: `python manage.py createsuperuser`
-
-9. #### **`admin.py`**
-  - Sets the local django admin that displays the database according to the models
-    
-10. #### **`urls.py`**
-  - Contains the essential paths of the project
-
-11. #### **`views_queries`**
-  - Sets django.db connection and executes views queries
-
-
-3) ### **Frontend Folder**
-
-The `frontend` directory contains all the client-side code:
-
-1. **`db-app`**  
-   - Contains pages (upload, database, views, team)
-   - Handles database connections and queries
-   - Houses React components and UI elements
-
-2. **`frontend`**    
-   - Contains settings and configurations
-   - Manages frontend assets and resources
-
-3. **`venv`**  
-   - Python virtual environment directory
-   - Contains project's Python dependencies
-   - Isolates project dependencies from system Python
-
----
-
-## **Future Improvements**
-
-The system can be further enhanced with the following features:
-
-1. **Support for Multiple File Types**:  
-   - Enable the upload and processing of various file types (e.g., Word documents, images) instead of restricting uploads to PDFs.
-
-2. **Smart Recommendation System**:  
-   - Develop an AI-powered recommendation feature where the system suggests restaurants based on the user's preferred meal choice for a specific day.
-
-3. **Expanded Dietary Restriction Options**:  
-   - Incorporate more dietary restriction filters, such as **Halal food** or **Soy-free options**, to cater to a wider range of users' dietary needs.
-
+Licensed under the MIT License
 
 

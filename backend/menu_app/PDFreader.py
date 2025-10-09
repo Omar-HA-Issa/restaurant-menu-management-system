@@ -1,113 +1,76 @@
-import fitz  # PyMuPDF
-from google.cloud import vision
-from google.oauth2 import service_account
-import io
-from PIL import Image
 import os
+from typing import Optional
+import fitz  # PyMuPDF
 
-def extract_text_from_pdf(pdf_file_path):
-    """Extract text from a PDF file using PyMuPDF."""
+
+def extract_text_from_pdf(pdf_file_path: str) -> Optional[str]:
+    """
+    Extract text from a PDF file using PyMuPDF only.
+    Returns a single string with page texts separated by blank lines, or None on error/empty.
+    """
     try:
-        # Verify the file exists
         if not os.path.exists(pdf_file_path):
-            print(f"File not found: {pdf_file_path}")
+            print(f"[PDF] File not found: {pdf_file_path}")
             return None
-            
-        # Print file info for debugging
-        print(f"Attempting to open PDF file: {pdf_file_path}")
-        
-        # Open the PDF file using PyMuPDF
+
+        print(f"[PDF] Opening: {pdf_file_path}")
         doc = fitz.open(pdf_file_path)
-        text = []
-        
-        # Extract text from each page
-        for page_num in range(doc.page_count):
-            page = doc.load_page(page_num)
-            page_text = page.get_text("text").strip()
-            if page_text:  # Only add non-empty pages
-                text.append(page_text)
-        
-        # Close the document
-        doc.close()
-        
-        # Combine all text with proper spacing
-        combined_text = "\n\n".join(text).strip()
-        
-        # Debug print
-        print("Extracted text length:", len(combined_text))
-        print("First 200 characters of extracted text:", combined_text[:200])
-        
-        if not combined_text:
-            print("No text extracted from PDF")
-            return None
-            
-        return combined_text
-        
+        try:
+            pages = []
+            for page_num in range(doc.page_count):
+                page = doc.load_page(page_num)
+                page_text = page.get_text("text").strip()
+                if page_text:
+                    pages.append(page_text)
+
+            combined = "\n\n".join(pages).strip()
+            if not combined:
+                print("[PDF] No extractable text found (might be scanned images).")
+                return None
+
+            # Debug slice
+            print(f"[PDF] Extracted length: {len(combined)}")
+            print(f"[PDF] Preview: {combined[:200]!r}")
+            return combined
+        finally:
+            doc.close()
+
     except fitz.FileDataError as e:
-        print(f"PDF file is corrupted or invalid: {e}")
+        print(f"[PDF] Invalid/corrupted PDF: {e}")
         return None
     except Exception as e:
-        print(f"An error occurred while extracting text from the PDF: {type(e).__name__}: {e}")
+        print(f"[PDF] Unexpected error: {type(e).__name__}: {e}")
         return None
 
-def extract_text_from_image(image_path):
-    """Extract text from an image using Google Cloud Vision API."""
-    try:
-        # Verify the file exists
-        if not os.path.exists(image_path):
-            print(f"Image file not found: {image_path}")
-            return None
-            
-        # Set up credentials for Google Cloud Vision API
-        credentials_path = r"C:\Users\User\Downloads\output-results_output-1-to-1.json"
-        if not os.path.exists(credentials_path):
-            print("Google Cloud credentials file not found")
-            return None
-            
-        credentials = service_account.Credentials.from_service_account_file(credentials_path)
-        client = vision.ImageAnnotatorClient(credentials=credentials)
-        
-        # Read image into memory
-        with open(image_path, "rb") as image_file:
-            content = image_file.read()
-            
-        # Create image object
-        image = vision.Image(content=content)
-        
-        # Perform text detection
-        response = client.text_detection(image=image)
-        
-        # Check for errors
-        if response.error.message:
-            print(f"Error from Google Vision API: {response.error.message}")
-            return None
-            
-        texts = response.text_annotations
-        if texts:
-            extracted_text = texts[0].description.strip()
-            print("Extracted text length from image:", len(extracted_text))
-            print("First 200 characters of extracted text from image:", extracted_text[:200])
-            return extracted_text
-        else:
-            print("No text found in the image")
-            return None
-            
-    except Exception as e:
-        print(f"An error occurred while extracting text from the image: {type(e).__name__}: {e}")
+
+def extract_text_from_image(image_path: str) -> Optional[str]:
+    """
+    Placeholder for image OCR. Google Vision removed to keep the project light.
+    - Returns None, but never raises due to missing OCR libs.
+    - If you later add OCR (e.g., Tesseract or Google Vision), implement here.
+    """
+    if not os.path.exists(image_path):
+        print(f"[IMG] File not found: {image_path}")
         return None
 
-def save_text_to_file(text, output_file_path):
-    """Save extracted text to a file."""
+    print("[IMG] OCR disabled in this build (no external OCR dependency).")
+    return None
+
+
+def save_text_to_file(text: Optional[str], output_file_path: str) -> bool:
+    """
+    Save extracted text to a file. Returns True on success, False otherwise.
+    """
     try:
         if not text:
-            print("No text to save")
+            print("[SAVE] No text to save.")
             return False
-            
-        with open(output_file_path, "w", encoding="utf-8") as file:
-            file.write(text)
-        print(f"Text successfully saved to {output_file_path}")
+
+        os.makedirs(os.path.dirname(output_file_path) or ".", exist_ok=True)
+        with open(output_file_path, "w", encoding="utf-8") as f:
+            f.write(text)
+        print(f"[SAVE] Wrote text to: {output_file_path}")
         return True
-        
     except Exception as e:
-        print(f"An error occurred while saving the text: {type(e).__name__}: {e}")
+        print(f"[SAVE] Error: {type(e).__name__}: {e}")
         return False

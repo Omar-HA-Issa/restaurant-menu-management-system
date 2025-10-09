@@ -21,9 +21,6 @@ media/
 .env
 *.env
 
-# Secrets - CRITICAL
-restaurant_menu_project2/restaurant_menu_project/settings.py
-
 # IDE
 .idea/
 .vscode/

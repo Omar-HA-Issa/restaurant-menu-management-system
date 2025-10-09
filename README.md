@@ -99,6 +99,7 @@ The project includes a lightweight, automated test suite to verify backend funct
 
 ### Run Tests
 ```bash
+cd backend
 pytest -v
 ```
 

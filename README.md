@@ -58,6 +58,108 @@ This project was developed as a group effort. My main responsibility was designi
 
 ---
 
+## Installation
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/restaurant-menu-management-system.git
+cd restaurant-menu-management-system
+```
+
+### 2. Backend Setup
+
+#### Install Python Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+#### Configure Environment Variables
+
+Create a `.env` file in the `backend/` directory:
+```bash
+cd backend
+```
+
+Create `.env` with the following content:
+```env
+# Django
+DJANGO_SECRET_KEY=your-django-secret-key-here
+
+# Anthropic Claude API
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+
+# Database
+DB_NAME=restaurant_menus
+DB_USER=root
+DB_PASSWORD=your-mysql-password-here
+DB_HOST=localhost
+DB_PORT=3306
+```
+
+#### Run Database Migrations
+```bash
+python manage.py migrate
+```
+
+#### Create Superuser (Optional)
+```bash
+python manage.py createsuperuser
+```
+
+#### Start Backend Server
+```bash
+python manage.py runserver
+```
+
+The backend will be available at `http://127.0.0.1:8000/`
+
+### 3. Frontend Setup
+
+#### Install Node Dependencies
+```bash
+cd frontend/db-app
+npm install
+```
+
+#### Start Frontend Development Server
+```bash
+npm run dev
+```
+
+The frontend will be available at `http://localhost:3000/`
+
+## Running Tests
+
+### Backend Tests
+
+Navigate to the backend directory:
+```bash
+cd backend
+```
+
+#### Run All Tests
+```bash
+pytest
+```
+
+#### Run Tests with Verbose Output
+```bash
+pytest -v
+```
+
+#### Run Specific Test Files
+```bash
+# Model tests
+pytest tests/test_models.py -v
+
+# API tests
+pytest tests/test_api.py -v
+
+# Upload tests
+pytest tests/test_upload.py -v
+```
+
+
 ## Database Schema
 
 - **Restaurant:** name, location  
